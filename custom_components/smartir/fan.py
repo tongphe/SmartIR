@@ -220,8 +220,16 @@ class SmartIRFan(FanEntity, RestoreEntity):
         """Turn on the fan."""
         if speed is None:
             speed = self._last_on_speed or self._speed_list[1]
-
-        await self.async_set_speed(speed)
+        self._speed = speed
+        
+        command = self._commands['off']
+        try:
+            await self._controller.send(command)
+        except Exception as e:
+            _LOGGER.exception(e)
+            
+        await self.async_update_ha_state()
+        # await self.async_set_speed(speed)
 
     async def async_turn_off(self):
         """Turn off the fan."""
